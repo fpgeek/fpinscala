@@ -4,15 +4,39 @@ package fpinscala.errorhandling
 import scala.{Option => _, Some => _, Either => _, _} // hide std library `Option`, `Some` and `Either`, since we are writing our own in this chapter
 
 sealed trait Option[+A] {
-  def map[B](f: A => B): Option[B] = sys.error("todo")
+  def map[B](f: A => B): Option[B] = this match {
+    case Some(v) => Some(f(v))
+    case None => None
+  }
 
-  def getOrElse[B>:A](default: => B): B = sys.error("todo")
+  def getOrElse[B>:A](default: => B): B = this match {
+    case Some(v) => v
+    case None => default
+  }
 
-  def flatMap[B](f: A => Option[B]): Option[B] = sys.error("todo")
+  def flatMap[B](f: A => Option[B]): Option[B] =
+    map(f) getOrElse None
 
-  def orElse[B>:A](ob: => Option[B]): Option[B] = sys.error("todo")
+  def flatMap_1[B](f: A => Option[B]): Option[B] = this match {
+    case Some(v) => f(v)
+    case None => None
+  }
 
-  def filter(f: A => Boolean): Option[A] = sys.error("todo")
+  def orElse[B>:A](ob: => Option[B]): Option[B] =
+    map(Some(_)) getOrElse ob
+
+  def orElse_1[B>:A](ob: => Option[B]): Option[B] = this match {
+    case Some(v) => Some(v)
+    case None => ob
+  }
+
+  def filter(f: A => Boolean): Option[A] =
+    flatMap(v => if (f(v)) Some(v) else None)
+
+  def filter_1(f: A => Boolean): Option[A] = this match {
+    case Some(v) => if (f(v)) Some(v) else None
+    case None => None
+  }
 }
 case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
